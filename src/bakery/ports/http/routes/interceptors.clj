@@ -77,6 +77,17 @@
                 (println "full-async ending!")))
             context)})
 
+(def async-blocker-interceptor
+  {:name  ::async-blocker
+   :enter (fn [context]
+            (println "async-blocker-interceptor")
+            (let [channels (-> context :request :async-channels vals)
+                  merged-channels (async/map merge channels)
+                  async-data (async/<!! merged-channels)
+                  context (assoc-in context [:request :async-data] async-data)]
+              (async/close! merged-channels)
+              context))})
+
 (def pos-interceptor
   {:name  ::pos
    :enter (fn [context]

@@ -27,6 +27,15 @@
                                (i/json-out)
                                http/html-body])
 
+(def json-take-interceptors-3 [(body-params/body-params)
+                               i/async-interceptor-3
+                               i/async-interceptor-4
+                               i/full-async-interceptor
+                               i/pos-interceptor
+                               i/async-blocker-interceptor
+                               (i/json-out)
+                               http/html-body])
+
 (defn take-foo
   [request]
   (println "Handler")
@@ -43,5 +52,6 @@
 
 (def specs #{["/foo" :get (conj json-interceptors `r.foo/get-foo) :route-name :get-foo]
              ["/take-foo" :get (conj json-take-interceptors `take-foo) :route-name :take-foo]
-             ["/take-foo-2" :get (conj json-take-interceptors-2 `take-foo-2) :route-name :take-foo-2]
+             ["/take-foo-2" :get (conj json-take-interceptors-2 `take-foo-2) :route-name :take-foo-2] ;handler awaits approach
+             ["/take-foo-3" :get (conj json-take-interceptors-3 `take-foo) :route-name :take-foo-3] ;interceptor awaits approach
              ["/foo" :post (conj json-interceptors `r.foo/post-foo) :route-name :post-foo]})
