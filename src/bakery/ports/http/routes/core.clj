@@ -1,8 +1,10 @@
 (ns bakery.ports.http.routes.core
-  (:require [io.pedestal.http :as http]
-    [io.pedestal.http.body-params :as body-params]
-    [bakery.ports.http.routes.interceptors :as i]
-    [bakery.ports.http.routes.foo :as r.foo]))
+  (:require
+   [clojure.core.async :as async]
+   [io.pedestal.http :as http]
+   [io.pedestal.http.body-params :as body-params]
+   [bakery.ports.http.routes.interceptors :as i]
+   [bakery.ports.http.routes.foo :as r.foo]))
 
 (def common-interceptors [(body-params/body-params)
                           http/html-body])
@@ -17,11 +19,27 @@
                              (i/json-out)
                              http/html-body])
 
-(defn take-foo-2
+(def json-take-interceptors-2 [(body-params/body-params)
+                               i/async-interceptor-3
+                               i/async-interceptor-4
+                               i/pos-interceptor
+                               (i/json-out)
+                               http/html-body])
+
+(defn take-foo
   [request]
   (println "Handler")
   {:status 200 :headers {"Content-Type" "application/json"} :body (:async-data request)})
 
+(defn take-foo-2
+  [request]
+  (println "Handler 2")
+  (let [channels (-> request :async-channels vals)
+        merged-channels (async/map merge channels)
+        async-data (async/<!! merged-channels)]
+    {:status 200 :headers {"Content-Type" "application/json"} :body async-data}))
+
 (def specs #{["/foo" :get (conj json-interceptors `r.foo/get-foo) :route-name :get-foo]
-             ["/take-foo" :get (conj json-take-interceptors `take-foo-2) :route-name :take-foo]
+             ["/take-foo" :get (conj json-take-interceptors `take-foo) :route-name :take-foo]
+             ["/take-foo-2" :get (conj json-take-interceptors-2 `take-foo-2) :route-name :take-foo-2]
              ["/foo" :post (conj json-interceptors `r.foo/post-foo) :route-name :post-foo]})
