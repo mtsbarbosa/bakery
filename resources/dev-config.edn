@@ -1,0 +1,4 @@
+{
+ bakery.configs/env "dev"
+ ;bakery.configs/secret #config/env "MY_SECRET_ENV"
+ }
