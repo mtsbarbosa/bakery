@@ -19,6 +19,9 @@
   ([context id data]
    (assoc-in context [:request :async-data id] data)))
 
+;thread pool clojure.core.async.pool-size
+;e. g. :jvm-opts ["-Dclojure.core.async.pool-size=32"] in project.clj
+
 (def async-interceptor
   {:name  ::async
    :enter (fn [context]
@@ -59,11 +62,20 @@
             (let [chan (async/chan)]
               (async/go
                 (do
-                  (Thread/sleep 2000)
+                  (Thread/sleep 4000)
                   (println "channel 4 being put!")
                   (async/>! chan (get-in (push-async-data context :async-4 1917) [:request :async-data]))))
               (println "exit 4")
               (push-async-channel context :async-4 chan)))})
+
+(def full-async-interceptor
+  {:name  ::full-async
+   :enter (fn [context]
+            (async/go
+              (do
+                (Thread/sleep 10000)
+                (println "full-async ending!")))
+            context)})
 
 (def pos-interceptor
   {:name  ::pos

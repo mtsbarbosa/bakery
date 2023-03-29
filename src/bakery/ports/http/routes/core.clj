@@ -22,6 +22,7 @@
 (def json-take-interceptors-2 [(body-params/body-params)
                                i/async-interceptor-3
                                i/async-interceptor-4
+                               i/full-async-interceptor
                                i/pos-interceptor
                                (i/json-out)
                                http/html-body])
@@ -37,6 +38,7 @@
   (let [channels (-> request :async-channels vals)
         merged-channels (async/map merge channels)
         async-data (async/<!! merged-channels)]
+    (async/close! merged-channels)
     {:status 200 :headers {"Content-Type" "application/json"} :body async-data}))
 
 (def specs #{["/foo" :get (conj json-interceptors `r.foo/get-foo) :route-name :get-foo]
