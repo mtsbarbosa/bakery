@@ -50,8 +50,11 @@
     (async/close! merged-channels)
     {:status 200 :headers {"Content-Type" "application/json"} :body async-data}))
 
+(defn mk-err [_] (throw (Exception. "test")))
+
 (def specs #{["/foo" :get (conj json-interceptors `r.foo/get-foo) :route-name :get-foo]
-             ["/take-foo" :get (conj json-take-interceptors `take-foo) :route-name :take-foo]
+             ["/take-foo" :get (conj json-take-interceptors `take-foo) :route-name :take-foo] ;async thread pool pedestal approach, interceptors block each other
              ["/take-foo-2" :get (conj json-take-interceptors-2 `take-foo-2) :route-name :take-foo-2] ;handler awaits approach
              ["/take-foo-3" :get (conj json-take-interceptors-3 `take-foo) :route-name :take-foo-3] ;interceptor awaits approach
-             ["/foo" :post (conj json-interceptors `r.foo/post-foo) :route-name :post-foo]})
+             ["/foo" :post (conj json-interceptors `r.foo/post-foo) :route-name :post-foo]
+             ["/err" :get [i/error-interceptor i/name-only-interceptor `mk-err] :route-name :mk-err]})

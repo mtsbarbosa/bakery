@@ -102,3 +102,12 @@
                  :body
                  (convert-to-json)
                  (assoc-in context [:response :body])))})
+
+(def error-interceptor
+  {:name ::error-i
+   :error (fn [context err]
+            (println err)
+            (assoc context :response {:status 400 :body "Another bad one"}))})
+
+(def name-only-interceptor
+  {:name ::name-i})
